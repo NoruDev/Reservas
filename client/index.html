@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas de Citas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --border: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #2980b9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* AUTENTICACIÓN */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-form h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--dark);
+        }
+
+        .toggle-auth a {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .main-app {
+            display: none;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-name {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .role-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-badge.admin {
+            background: var(--danger);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* CONTENIDO */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: var(--dark);
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* SERVICIOS */
+        .servicios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .servicio-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .servicio-nombre {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .servicio-info {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .servicio-precio {
+            font-size: 24px;
+            color: var(--success);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .servicio-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .servicio-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        /* TABLA */
+        .tabla-reservas {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .tabla-reservas thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tabla-reservas th,
+        .tabla-reservas td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .tabla-reservas tbody tr:hover {
+            background: var(--light);
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .estado-activa {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estado-cancelada {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* UTILIDADES */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--dark);
+        }
+
+        .spinner {
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--dark);
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .servicios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SECCIÓN AUTENTICACIÓN -->
+<div id="authSection" class="auth-container">
+    <div class="auth-form">
+        <div id="alertBox" class="alert"></div>
+
+        <!-- LOGIN -->
+        <div id="loginForm">
+            <h1>🔐 Iniciar Sesión</h1>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">Ingresar</button>
+            </form>
+            <div class="toggle-auth">
+                ¿No tienes cuenta? <a onclick="toggleAuthMode()">Regístrate aquí</a>
+            </div>
+        </div>
+
+        <!-- REGISTRO -->
+        <div id="registerForm" style="display: none;">
+            <h1>✨ Crear Cuenta</h1>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="registerNombre" required placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="registerPassword" required placeholder="••••••••" minlength="6">
+                </div>
+                <button type="submit" class="btn btn-success">Crear Cuenta</button>
+            </form>
+            <div class="toggle-auth">
+                ¿Ya tienes cuenta? <a onclick="toggleAuthMode()">Inicia sesión aquí</a>
+            </div>
+        </div>
+
+        <!-- DEMO USUARIOS -->
+        <div class="mt-20" style="text-align: center; color: #7f8c8d; font-size: 12px; padding-top: 20px; border-top: 1px solid var(--light);">
+            <p><strong>Usuarios de prueba:</strong></p>
+            <p>👨‍💼 Admin: admin@example.com / admin123</p>
+            <p>👤 Cliente: cliente@example.com / cliente123</p>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN APLICACIÓN -->
+<div id="appSection" class="main-app">
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>📅 Sistema de Reservas</h1>
+            <div class="user-info">
+                <div>
+                    <div class="user-name" id="userName"></div>
+                    <div class="role-badge" id="userRole"></div>
+                </div>
+                <button class="btn btn-danger" style="padding: 10px 20px; width: auto;" onclick="handleLogout()">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <!-- NAVEGACIÓN -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('servicios')">📋 Servicios</button>
+            <button class="nav-tab" onclick="switchTab('mis-reservas')">📅 Mis Reservas</button>
+            <div id="adminTabs" style="display: none; gap: 10px;">
+                <button class="nav-tab" onclick="switchTab('gestionar-servicios')">⚙️ Gestionar Servicios</button>
+                <button class="nav-tab" onclick="switchTab('horarios')">🕐 Configurar Horarios</button>
+                <button class="nav-tab" onclick="switchTab('agenda')">📆 Agenda del Día</button>
+            </div>
+        </div>
+
+        <!-- TAB: SERVICIOS (Cliente y Admin) -->
+        <div id="servicios" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">📋 Servicios Disponibles</h2>
+                <div id="serviciosList" class="servicios-grid"></div>
+            </div>
+        </div>
+
+        <!-- TAB: MIS RESERVAS -->
+        <div id="mis-reservas" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📅 Mis Reservas</h2>
+                <div id="misReservasList"></div>
+            </div>
+        </div>
+
+        <!-- TAB: GESTIONAR SERVICIOS (Admin) -->
+        <div id="gestionar-servicios" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">⚙️ Gestionar Servicios</h2>
+                <button class="btn btn-success" style="width: auto; margin-bottom: 20px;" onclick="abrirModalServicio()">
+                    ➕ Nuevo Servicio
+                </button>
+                <div id="adminServiciosList" class="servicios-grid"></div>
+            </div>
+        </div>
+
+        <!-- TAB: CONFIGURAR HORARIOS (Admin) -->
+        <div id="horarios" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">🕐 Configurar Horarios Disponibles</h2>
+                <form onsubmit="handleConfigurarHorario(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Servicio</label>
+                            <select id="servicioHorarioSelect" required>
+                                <option value="">Seleccionar servicio...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Día de la Semana</label>
+                            <select id="diasemanaSelect" required>
+                                <option value="">Seleccionar día...</option>
+                                <option value="0">Lunes</option>
+                                <option value="1">Martes</option>
+                                <option value="2">Miércoles</option>
+                                <option value="3">Jueves</option>
+                                <option value="4">Viernes</option>
+                                <option value="5">Sábado</option>
+                                <option value="6">Domingo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Hora de Inicio</label>
+                            <input type="time" id="horaInicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora de Fin</label>
+                            <input type="time" id="horaFin" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: auto;">Guardar Horario</button>
+                </form>
+                <hr style="margin: 30px 0;">
+                <h3 style="margin-bottom: 20px;">Horarios Configurados</h3>
+                <div id="horariosLista"></div>
+            </div>
+        </div>
+
+        <!-- TAB: AGENDA (Admin) -->
+        <div id="agenda" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📆 Agenda del Día</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Seleccionar Fecha</label>
+                        <input type="date" id="agendaFecha">
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" style="width: auto;" onclick="cargarAgenda()">Mostrar Agenda</button>
+                    </div>
+                </div>
+                <div id="agendaLista"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CREAR/EDITAR SERVICIO -->
+<div id="modalServicio" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalServicioTitle">Nuevo Servicio</h2>
+            <button class="close-btn" onclick="cerrarModal('modalServicio')">&times;</button>
+        </div>
+        <form onsubmit="handleGuardarServicio(event)">
+            <div class="form-group">
+                <label>Nombre del Servicio</label>
+                <input type="text" id="servicioNombre" required placeholder="Ej: Corte de cabello">
+            </div>
+            <div class="form-group">
+                <label>Duración (minutos)</label>
+                <input type="number" id="servicioDuracion" required min="15" step="15" placeholder="30">
+            </div>
+            <div class="form-group">
+                <label>Precio ($)</label>
+                <input type="number" id="servicioPrecio" required min="0" step="0.01" placeholder="50.00">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <button type="button" class="btn" style="background: var(--border); color: var(--dark);" onclick="cerrarModal('modalServicio')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: HACER RESERVA -->
+<div id="modalReserva" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Hacer Reserva</h2>
+            <button class="close-btn" onclick="cerrarModal('modalReserva')">&times;</button>
+        </div>
+        <form onsubmit="handleHacerReserva(event)">
+            <div class="form-group">
+                <label>Servicio</label>
+                <input type="text" id="reservaServicio" disabled style="background: var(--light);">
+                <input type="hidden" id="reservaServicioId">
+            </div>
+            <div class="form-group">
+                <label>Precio</label>
+                <input type="text" id="reservaPrecio" disabled style="background: var(--light);">
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="reservaFecha" required>
+            </div>
+            <div class="form-group">
+                <label>Hora</label>
+                <input type="time" id="reservaHora" required>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Confirmar Reserva</button>
+                <button type="button" class="btn" style="background: var(--border); color: var(--dark);" onclick="cerrarModal('modalReserva')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: EDITAR SERVICIO (Admin) -->
+<div id="modalEditarServicio" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Editar Servicio</h2>
+            <button class="close-btn" onclick="cerrarModal('modalEditarServicio')">&times;</button>
+        </div>
+        <form onsubmit="handleEditarServicio(event)">
+            <input type="hidden" id="servicioEditarId">
+            <div class="form-group">
+                <label>Nombre del Servicio</label>
+                <input type="text" id="servicioEditarNombre" required>
+            </div>
+            <div class="form-group">
+                <label>Duración (minutos)</label>
+                <input type="number" id="servicioEditarDuracion" required min="15" step="15">
+            </div>
+            <div class="form-group">
+                <label>Precio ($)</label>
+                <input type="number" id="servicioEditarPrecio" required min="0" step="0.01">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                <button type="button" class="btn" style="background: var(--border); color: var(--dark);" onclick="cerrarModal('modalEditarServicio')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:3000/api';
+    let currentUser = null;
+    let currentToken = null;
+
+    function showAlert(message, type = 'success') {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.textContent = message;
+        alertBox.className = `alert show alert-${type}`;
+        setTimeout(() => {
+            alertBox.classList.remove('show');
+        }, 4000);
+    }
+
+    function abrirModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+
+    function cerrarModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        const tab = document.getElementById(tabName);
+        if (tab) {
+            tab.classList.add('active');
+        }
+
+        event.target.classList.add('active');
+
+        if (tabName === 'servicios') {
+            cargarServicios();
+        } else if (tabName === 'mis-reservas') {
+            cargarMisReservas();
+        } else if (tabName === 'gestionar-servicios') {
+            cargarServiciosAdmin();
+        } else if (tabName === 'horarios') {
+            cargarServiciosSelect();
+            cargarHorarios();
+        }
+    }
+
+    // AUTENTICACIÓN
+    function toggleAuthMode() {
+        document.getElementById('loginForm').style.display = 
+            document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
+        document.getElementById('registerForm').style.display = 
+            document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                currentToken = data.token;
+                localStorage.setItem('token', currentToken);
+                verificarUsuario();
+                mostrarApp();
+            } else {
+                showAlert(data.error || 'Error al iniciar sesión', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('registerNombre').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, password })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                showAlert('¡Cuenta creada! Ahora inicia sesión.', 'success');
+                setTimeout(() => {
+                    toggleAuthMode();
+                    document.getElementById('loginEmail').value = email;
+                }, 1500);
+            } else {
+                showAlert(data.error || 'Error al registrar', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    function verificarUsuario() {
+        const parts = currentToken.split('.');
+        const payload = JSON.parse(atob(parts[1]));
+        
+        currentUser = {
+            id: payload.id,
+            email: document.getElementById('loginEmail').value || 'usuario@email.com'
+        };
+
+        document.getElementById('userName').textContent = currentUser.email;
+        const isAdmin = currentUser.email.includes('admin');
+        document.getElementById('userRole').textContent = isAdmin ? 'Administrador' : 'Cliente';
+        document.getElementById('userRole').className = `role-badge ${isAdmin ? 'admin' : ''}`;
+        document.getElementById('adminTabs').style.display = isAdmin ? 'flex' : 'none';
+    }
+
+    function handleLogout() {
+        currentToken = null;
+        currentUser = null;
+        localStorage.removeItem('token');
+        document.getElementById('authSection').style.display = 'flex';
+        document.getElementById('appSection').style.display = 'none';
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+    }
+
+    function mostrarApp() {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('appSection').style.display = 'block';
+        cargarServicios();
+    }
+
+    // SERVICIOS
+    async function cargarServicios() {
+        const container = document.getElementById('serviciosList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando servicios...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/servicios`);
+            const servicios = await res.json();
+
+            if (servicios.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div>📭 No hay servicios disponibles</div></div>';
+                return;
+            }
+
+            container.innerHTML = servicios.map(s => `
+                <div class="servicio-card">
+                    <div class="servicio-nombre">${s.nombre}</div>
+                    <div class="servicio-info">
+                        ⏱️ Duración: ${s.duracion} minutos
+                    </div>
+                    <div class="servicio-precio">$${parseFloat(s.precio).toFixed(2)}</div>
+                    <div class="servicio-actions">
+                        <button class="btn btn-primary" onclick="abrirFormularioReserva(${s.id}, '${s.nombre}', ${s.precio})">
+                            Reservar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state">Error al cargar servicios</div>';
+        }
+    }
+
+    async function cargarServiciosAdmin() {
+        const container = document.getElementById('adminServiciosList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando servicios...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/servicios`);
+            const servicios = await res.json();
+
+            if (servicios.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No hay servicios</div>';
+                return;
+            }
+
+            container.innerHTML = servicios.map(s => `
+                <div class="servicio-card">
+                    <div class="servicio-nombre">${s.nombre}</div>
+                    <div class="servicio-info">
+                        ⏱️ Duración: ${s.duracion} minutos<br>
+                        💰 Precio: $${parseFloat(s.precio).toFixed(2)}
+                    </div>
+                    <div class="servicio-actions">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="abrirEditarServicio(${s.id}, '${s.nombre}', ${s.duracion}, ${s.precio})">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn btn-danger" style="flex: 1;" onclick="eliminarServicio(${s.id})">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state">Error al cargar servicios</div>';
+        }
+    }
+
+    async function cargarServiciosSelect() {
+        try {
+            const res = await fetch(`${API_URL}/servicios`);
+            const servicios = await res.json();
+            const select = document.getElementById('servicioHorarioSelect');
+            
+            select.innerHTML = '<option value="">Seleccionar servicio...</option>' + 
+                servicios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+        } catch (error) {
+            console.error('Error cargando servicios:', error);
+        }
+    }
+
+    function abrirModalServicio() {
+        document.getElementById('servicioNombre').value = '';
+        document.getElementById('servicioDuracion').value = '';
+        document.getElementById('servicioPrecio').value = '';
+        document.getElementById('modalServicioTitle').textContent = 'Nuevo Servicio';
+        abrirModal('modalServicio');
+    }
+
+    async function handleGuardarServicio(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('servicioNombre').value;
+        const duracion = document.getElementById('servicioDuracion').value;
+        const precio = document.getElementById('servicioPrecio').value;
+
+        try {
+            const res = await fetch(`${API_URL}/servicios`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify({ nombre, duracion, precio })
+            });
+
+            if (res.ok) {
+                showAlert('Servicio creado correctamente', 'success');
+                cerrarModal('modalServicio');
+                cargarServiciosAdmin();
+                cargarServicios();
+            } else {
+                showAlert('Error al crear servicio', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    function abrirEditarServicio(id, nombre, duracion, precio) {
+        document.getElementById('servicioEditarId').value = id;
+        document.getElementById('servicioEditarNombre').value = nombre;
+        document.getElementById('servicioEditarDuracion').value = duracion;
+        document.getElementById('servicioEditarPrecio').value = precio;
+        abrirModal('modalEditarServicio');
+    }
+
+    async function handleEditarServicio(e) {
+        e.preventDefault();
+        const id = document.getElementById('servicioEditarId').value;
+        const nombre = document.getElementById('servicioEditarNombre').value;
+        const duracion = document.getElementById('servicioEditarDuracion').value;
+        const precio = document.getElementById('servicioEditarPrecio').value;
+
+        try {
+            const res = await fetch(`${API_URL}/servicios/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify({ nombre, duracion, precio })
+            });
+
+            if (res.ok) {
+                showAlert('Servicio actualizado', 'success');
+                cerrarModal('modalEditarServicio');
+                cargarServiciosAdmin();
+                cargarServicios();
+            } else {
+                showAlert('Error al actualizar', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    async function eliminarServicio(id) {
+        if (!confirm('¿Deseas eliminar este servicio?')) return;
+
+        try {
+            const res = await fetch(`${API_URL}/servicios/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            if (res.ok) {
+                showAlert('Servicio eliminado', 'success');
+                cargarServiciosAdmin();
+                cargarServicios();
+            } else {
+                showAlert('Error al eliminar', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    // RESERVAS
+    function abrirFormularioReserva(servicioId, servicioNombre, precio) {
+        document.getElementById('reservaServicioId').value = servicioId;
+        document.getElementById('reservaServicio').value = servicioNombre;
+        document.getElementById('reservaPrecio').value = `$${parseFloat(precio).toFixed(2)}`;
+        document.getElementById('reservaFecha').value = '';
+        document.getElementById('reservaHora').value = '';
+        abrirModal('modalReserva');
+    }
+
+    async function handleHacerReserva(e) {
+        e.preventDefault();
+        const servicioId = document.getElementById('reservaServicioId').value;
+        const fecha = document.getElementById('reservaFecha').value;
+        const horaInicio = document.getElementById('reservaHora').value;
+
+        try {
+            const res = await fetch(`${API_URL}/reservas`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify({ servicioId, fecha, horaInicio })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                showAlert('¡Reserva creada exitosamente!', 'success');
+                cerrarModal('modalReserva');
+                cargarMisReservas();
+            } else {
+                showAlert(data.error || 'Error al crear reserva', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    async function cargarMisReservas() {
+        const container = document.getElementById('misReservasList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando reservas...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/reservas/mis-reservas`, {
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            const reservas = await res.json();
+
+            if (reservas.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No tienes reservas</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="tabla-reservas">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reservas.map(r => `
+                            <tr>
+                                <td>${r.Servicio?.nombre || 'Sin servicio'}</td>
+                                <td>${new Date(r.fecha).toISOString().split('T')[0]}</td>
+                                <td>${r.hora_inicio}</td>
+                                <td>
+                                    <span class="estado-badge estado-${r.estado}">
+                                        ${r.estado === 'activa' ? '✓ Activa' : '✕ Cancelada'}
+                                    </span>
+                                </td>
+                                <td>
+                                    ${r.estado === 'activa' ? `
+                                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" 
+                                                onclick="cancelarReserva(${r.id})">
+                                            Cancelar
+                                        </button>
+                                    ` : '-'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state">Error al cargar reservas</div>';
+        }
+    }
+
+    async function cancelarReserva(id) {
+        if (!confirm('¿Deseas cancelar esta reserva?')) return;
+
+        try {
+            const res = await fetch(`${API_URL}/reservas/${id}/cancelar`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            if (res.ok) {
+                showAlert('Reserva cancelada', 'success');
+                cargarMisReservas();
+            } else {
+                showAlert('Error al cancelar', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    // HORARIOS
+    async function handleConfigurarHorario(e) {
+        e.preventDefault();
+        const servicioId = document.getElementById('servicioHorarioSelect').value;
+        const diaSemana = document.getElementById('diasemanaSelect').value;
+        const horaInicio = document.getElementById('horaInicio').value;
+        const horaFin = document.getElementById('horaFin').value;
+
+        try {
+            const res = await fetch(`${API_URL}/disponibilidad`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify({ servicioId, diaSemana, horaInicio, horaFin })
+            });
+
+            if (res.ok) {
+                showAlert('Horario configurado correctamente', 'success');
+                e.target.reset();
+                cargarHorarios();
+            } else {
+                showAlert('Error al configurar horario', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    async function cargarHorarios() {
+        const container = document.getElementById('horariosLista');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando horarios...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/disponibilidad`);
+            const horarios = await res.json();
+
+            if (horarios.length === 0) {
+                container.innerHTML = '<div class="empty-state">No hay horarios configurados</div>';
+                return;
+            }
+
+            const diasNombres = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+            container.innerHTML = `
+                <table class="tabla-reservas">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Día</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${horarios.map(h => `
+                            <tr>
+                                <td>#${h.servicioId}</td>
+                                <td>${diasNombres[h.diaSemana]}</td>
+                                <td>${h.horaInicio}</td>
+                                <td>${h.horaFin}</td>
+                                <td>
+                                    <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;"
+                                            onclick="eliminarHorario(${h.id})">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state">Error al cargar horarios</div>';
+        }
+    }
+
+    async function eliminarHorario(id) {
+        if (!confirm('¿Deseas eliminar este horario?')) return;
+
+        try {
+            const res = await fetch(`${API_URL}/disponibilidad/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            if (res.ok) {
+                showAlert('Horario eliminado', 'success');
+                cargarHorarios();
+            } else {
+                showAlert('Error al eliminar', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error de conexión', 'danger');
+        }
+    }
+
+    // AGENDA
+    async function cargarAgenda() {
+        const fecha = document.getElementById('agendaFecha').value;
+        if (!fecha) {
+            showAlert('Selecciona una fecha', 'danger');
+            return;
+        }
+
+        const container = document.getElementById('agendaLista');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando agenda...</div>';
+
+        try {
+            const res = await fetch(`${API_URL}/reservas/por-fecha?fecha=${fecha}`, {
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            const reservas = await res.json();
+
+            if (reservas.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 Sin citas para esta fecha</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="tabla-reservas">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Servicio</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reservas.map(r => `
+                            <tr>
+                                <td>${r.hora_inicio}</td>
+                                <td>${r.Servicio?.nombre || 'Sin servicio'}</td>
+                                <td>${r.Usuario?.nombre || 'Usuario'}</td>
+                                <td>
+                                    <span class="estado-badge estado-${r.estado}">
+                                        ${r.estado === 'activa' ? '✓ Activa' : '✕ Cancelada'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state">Error al cargar agenda</div>';
+        }
+    }
+
+    // INICIO
+    window.addEventListener('load', () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            currentToken = token;
+            verificarUsuario();
+            mostrarApp();
+        } else {
+            document.getElementById('authSection').style.display = 'flex';
+            document.getElementById('appSection').style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

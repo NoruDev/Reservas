@@ -1,0 +1,14 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno
+.env
+
+# Logs y archivos temporales
+npm-debug.log
+*.log
+.DS_Store
+
+# Carpetas de construcción
+dist/
+build/
