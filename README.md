@@ -176,23 +176,4 @@ Sistema-reservas/
 - Configurar CORS correctamente
 - No exponer errores detallados al cliente
 
-## 🐛 Troubleshooting
 
-**Error: "connect ECONNREFUSED 127.0.0.1:5432"**
-- Verifica que PostgreSQL esté corriendo
-- Revisa credenciales en `.env`
-
-**Error: "Syntax error near 'CREATE TABLE'"**
-- Ejecuta: `npx sequelize-cli db:migrate`
-
-**API responde 401 en rutas protegidas**
-- Asegúrate de enviar el token en header: `Authorization: Bearer <token>`
-
-## 📞 Soporte
-
-Para reportar bugs o sugerencias, crea un issue en el repositorio.
-
----
-
-**Versión:** 1.0.0  
-**Última actualización:** 2026-07-01
